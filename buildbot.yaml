@@ -3,13 +3,13 @@
   gather_facts: true
 
 - name: machine prep
-  hosts: [master, slaves]
+  hosts: all 
   sudo: yes
   tasks:
     - apt: update_cache=yes
 
 - name: buildbot prep
-  hosts: master
+  hosts: all
   sudo: yes
   tasks:
     - user: home={{ home }} name=buildbot state=present system=yes
@@ -42,7 +42,7 @@
       ignore_errors: true
 
 - name: buildbot slave setup
-  hosts: master
+  hosts: slaves
   sudo: yes
   sudo_user: buildbot
   tasks:
@@ -52,7 +52,7 @@
     - command: "{{ venv }}/bin/buildslave create-slave {{ slave_dir }} {{ groups['master'][0] }}:9989 example-slave pass"
 
 - name: buildbot slave start
-  hosts: master
+  hosts: slaves
   sudo: yes
   sudo_user: buildbot
   tasks:
