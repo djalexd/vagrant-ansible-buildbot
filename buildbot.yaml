@@ -1,0 +1,60 @@
+---
+- hosts: all
+  gather_facts: true
+
+- name: machine prep
+  hosts: [master, slaves]
+  sudo: yes
+  tasks:
+    - apt: update_cache=yes
+
+- name: buildbot prep
+  hosts: master
+  sudo: yes
+  tasks:
+    - user: home={{ home }} name=buildbot state=present system=yes
+    - apt: name={{ item }} state=latest
+      with_items:
+        - python-dev
+        - python-pip
+        - python-virtualenv
+        - git-core
+
+- name: buildbot master setup
+  hosts: master
+  sudo: yes
+  sudo_user: buildbot
+  tasks:
+    - pip: name={{ item }} virtualenv={{ venv }}
+      with_items:
+        - buildbot
+    - command: "{{ item }}"
+      with_items:
+        - "{{ venv }}/bin/buildbot create-master {{ master_dir }}"
+        - "mv {{ master_dir }}/master.cfg.sample {{ master_dir }}/master.cfg"
+
+- name: buildbot master start
+  hosts: master
+  sudo: yes
+  sudo_user: buildbot
+  tasks:
+    - command: "{{ venv }}/bin/buildbot start {{ master_dir }}"
+      ignore_errors: true
+
+- name: buildbot slave setup
+  hosts: master
+  sudo: yes
+  sudo_user: buildbot
+  tasks:
+    - pip: name={{ item }} virtualenv={{ venv }}
+      with_items:
+        - buildbot-slave
+    - command: "{{ venv }}/bin/buildslave create-slave {{ slave_dir }} {{ groups['master'][0] }}:9989 example-slave pass"
+
+- name: buildbot slave start
+  hosts: master
+  sudo: yes
+  sudo_user: buildbot
+  tasks:
+    - command: "{{ venv }}/bin/buildslave start {{ slave_dir }}"
+      ignore_errors: true

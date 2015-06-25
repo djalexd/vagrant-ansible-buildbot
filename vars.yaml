@@ -1,0 +1,4 @@
+home: "/opt/buildbot"
+venv: "/opt/buildbot/venv"
+master_dir: "/opt/buildbot/master"
+slave_dir: "/opt/buildbot/slave"
