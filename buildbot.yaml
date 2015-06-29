@@ -12,7 +12,7 @@
   hosts: all
   sudo: yes
   tasks:
-    - user: home={{ home }} name=buildbot password=$5$rounds=110000$ksUlycPc7vxzA.MU$ScMoEWf40hHF/GouUD7NvUk.18lIZ8dK6WTXmfPp6h/ state=present system=yes
+    - user: home={{ home }} name=buildbot state=present system=yes
     - apt: name={{ item }} state=latest
       with_items:
         - python-dev
