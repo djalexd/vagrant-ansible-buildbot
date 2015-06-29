@@ -1,2 +1,3 @@
 .vagrant
 .*.sw*
+ssh_keys/id_rsa*

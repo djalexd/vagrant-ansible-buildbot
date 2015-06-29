@@ -28,6 +28,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           ansible.extra_vars = "vars.yaml"
           ansible.inventory_path = "hosts"
           ansible.verbose = "vvvv"
+          ansible.host_key_checking = false
           ansible.sudo = true
           ansible.limit = "all"
         end # end provision

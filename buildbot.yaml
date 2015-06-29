@@ -12,13 +12,36 @@
   hosts: all
   sudo: yes
   tasks:
-    - user: home={{ home }} name=buildbot state=present system=yes generate_ssh_key=yes ssh_key_bits=2048 ssh_key_file={{ home }}/.ssh/id_rsa
+    - user: home={{ home }} name=buildbot password=$5$rounds=110000$ksUlycPc7vxzA.MU$ScMoEWf40hHF/GouUD7NvUk.18lIZ8dK6WTXmfPp6h/ state=present system=yes
     - apt: name={{ item }} state=latest
       with_items:
         - python-dev
         - python-pip
         - python-virtualenv
-        - git-core
+        - git
+
+- name: ensure github.com is a known host
+  hosts: slaves 
+  sudo: yes
+  tasks:
+    - lineinfile:
+        dest: "{{ home }}/.ssh/known_hosts"
+        create: yes
+        state: present
+        line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+        regexp: "^github\\.com"
+
+- name: upload private key
+  hosts: slaves 
+  sudo: yes
+  sudo_user: root
+  tasks:
+    - copy: 
+        src: ssh_keys/id_rsa
+        dest: "{{ home }}/.ssh/id_rsa"
+        mode: 0600
+        owner: buildbot
+        group: buildbot
 
 - name: buildbot master setup
   hosts: master
@@ -40,6 +63,9 @@
   sudo: yes
   sudo_user: buildbot
   tasks:
+    - copy: "content='buildbot  ALL= NOPASSWD: SETENV: /usr/bin/git-*, /usr/sbin/*builder\n'
+            dest=/etc/sudoers.d/buildbot owner=0 group=0 mode=0440"
+      sudo_user: root
     - pip: name={{ item }} virtualenv={{ venv }}
       with_items:
         - buildbot-slave
