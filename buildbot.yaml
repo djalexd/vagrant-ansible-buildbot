@@ -12,7 +12,7 @@
   hosts: all
   sudo: yes
   tasks:
-    - user: home={{ home }} name=buildbot state=present system=yes
+    - user: home={{ home }} name=buildbot state=present system=yes generate_ssh_key=yes ssh_key_bits=2048 ssh_key_file={{ home }}/.ssh/id_rsa
     - apt: name={{ item }} state=latest
       with_items:
         - python-dev
